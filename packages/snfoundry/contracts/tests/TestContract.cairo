@@ -1,60 +1,117 @@
-use contracts::YourContract::{
-    IYourContractDispatcher, IYourContractDispatcherTrait, YourContract::STRK_CONTRACT_ADDRESS,
+// Import libraries
+use contracts::IdentityRegistry::{
+    IIdentityRegistryDispatcher, IIdentityRegistryDispatcherTrait, IIdentityRegistrySafeDispatcher,
 };
-use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
-use openzeppelin_utils::serde::SerializedAppend;
-use snforge_std::{CheatSpan, ContractClassTrait, DeclareResultTrait, cheat_caller_address, declare};
+use openzeppelin_access::ownable::interface::{IOwnableDispatcher, IOwnableDispatcherTrait};
+
+use snforge_std::{
+    ContractClassTrait, DeclareResultTrait, declare, start_cheat_caller_address,
+    stop_cheat_caller_address,
+};
 use starknet::{ContractAddress};
 
-// Real contract address deployed on Sepolia
-const OWNER: felt252 = 0x02dA5254690b46B9C4059C25366D1778839BE63C142d899F0306fd5c312A5918;
-
-fn deploy_contract(name: ByteArray) -> ContractAddress {
-    let contract_class = declare(name).unwrap().contract_class();
-    let mut calldata = array![];
-    calldata.append_serde(OWNER);
-    let (contract_address, _) = contract_class.deploy(@calldata).unwrap();
-    contract_address
+fn owner() -> ContractAddress {
+    'owner'.try_into().unwrap()
 }
 
-#[test]
-fn test_set_greetings() {
-    let contract_address = deploy_contract("YourContract");
-
-    let dispatcher = IYourContractDispatcher { contract_address };
-
-    let current_greeting = dispatcher.greeting();
-    let expected_greeting: ByteArray = "Building Unstoppable Apps!!!";
-    assert(current_greeting == expected_greeting, 'Should have the right message');
-
-    let new_greeting: ByteArray = "Learn Scaffold-Stark 2! :)";
-    dispatcher.set_greeting(new_greeting.clone(), Option::None); // we dont transfer any eth
-    assert(dispatcher.greeting() == new_greeting, 'Should allow set new message');
+fn verifier() -> ContractAddress {
+    'verifier'.try_into().unwrap()
 }
 
-#[test]
-#[fork("SEPOLIA_LATEST")]
-fn test_transfer() {
-    let user: ContractAddress = OWNER.try_into().unwrap();
-    let strk_contract_address = STRK_CONTRACT_ADDRESS.try_into().unwrap();
-    let your_contract_address = deploy_contract("YourContract");
+fn user() -> ContractAddress {
+    'user'.try_into().unwrap()
+}
 
-    let your_contract_dispatcher = IYourContractDispatcher {
-        contract_address: your_contract_address,
+// Deploy function
+fn __deploy__() -> (
+    IIdentityRegistryDispatcher, IOwnableDispatcher, IIdentityRegistrySafeDispatcher,
+) {
+    // declare a contract class
+    let contract_class = declare("IdentityRegistry")
+        .expect('failed to declare class')
+        .contract_class();
+
+    // Serialize the constructor
+    let mut calldata: Array<felt252> = array![];
+    owner().serialize(ref calldata);
+
+    // Deploy the contract
+    let (contract_address, _) = contract_class.deploy(@calldata).expect('failed to deploy');
+
+    // Get a IdentityRegistry  instance
+    let IdentityRegistry = IIdentityRegistryDispatcher { contract_address: contract_address };
+    let ownable = IOwnableDispatcher { contract_address: contract_address };
+    let safe_IdentityRegistry = IIdentityRegistrySafeDispatcher {
+        contract_address: contract_address,
     };
-    let erc20_dispatcher = IERC20Dispatcher { contract_address: strk_contract_address };
-    let amount_to_transfer = 500;
-    cheat_caller_address(strk_contract_address, user, CheatSpan::TargetCalls(1));
-    erc20_dispatcher.approve(your_contract_address, amount_to_transfer);
-    let approved_amount = erc20_dispatcher.allowance(user, your_contract_address);
-    assert(approved_amount == amount_to_transfer, 'Not the right amount approved');
 
-    let new_greeting: ByteArray = "Learn Scaffold-Stark 2! :)";
+    (IdentityRegistry, ownable, safe_IdentityRegistry)
+}
 
-    cheat_caller_address(your_contract_address, user, CheatSpan::TargetCalls(1));
-    your_contract_dispatcher
-        .set_greeting(
-            new_greeting.clone(), Option::Some(amount_to_transfer),
-        ); // we transfer 500 wei
-    assert(your_contract_dispatcher.greeting() == new_greeting, 'Should allow set new message');
+#[test]
+fn test_identity_registry_deployment() {
+    let (_, ownable, _) = __deploy__();
+    assert(ownable.owner() == owner(), 'Owner not set');
+}
+
+#[test]
+fn test_register_identity() {
+    let (identity_registry, _, _) = __deploy__();
+
+    // Test identity registration
+    let test_hash: felt252 = 0x12345;
+
+    // Mimick a caller
+    start_cheat_caller_address(identity_registry.contract_address, user());
+    identity_registry.register_identity(test_hash);
+
+    // Verify registration
+    let stored_hash = identity_registry.get_identity_hash(user());
+    stop_cheat_caller_address(identity_registry.contract_address);
+    
+    assert(stored_hash == test_hash, 'Identity hash mismatch');
+}
+
+#[test]
+fn test_update_verification_status() {
+    let (identity_registry, _, _) = __deploy__();
+
+    // Test identity registration
+    let test_hash: felt252 = 12345;
+
+    // Mimick a caller
+    start_cheat_caller_address(identity_registry.contract_address, user());
+    identity_registry.register_identity(test_hash);
+    stop_cheat_caller_address(identity_registry.contract_address);
+
+    // Mimick the owner (the owner is a verifier by default)
+    start_cheat_caller_address(identity_registry.contract_address, owner());
+    identity_registry.update_verification_status(user(), true);
+    stop_cheat_caller_address(identity_registry.contract_address);
+
+    // Mimick the user again
+    start_cheat_caller_address(identity_registry.contract_address, user());
+    assert(identity_registry.is_verified(user()) == true,
+        'Verification status not correct',
+    );
+    stop_cheat_caller_address(identity_registry.contract_address);
+}
+
+#[test]
+fn test_authorize_verifier() {
+
+    let (identity_registry, _, _) = __deploy__();
+
+    let verifier = verifier();
+
+    // Assert that a random address cannot be an authorized verifier
+    assert(identity_registry.is_authorized_verifier(verifier) == false, 'Verifier without authorization');
+
+    // Mimick the owner (the owner only can grant verifier status)
+    start_cheat_caller_address(identity_registry.contract_address, owner());
+    identity_registry.authorize_verifier(verifier);
+    stop_cheat_caller_address(identity_registry.contract_address);
+
+    // Assert that a random address cannot be an authorized verifier
+    assert(identity_registry.is_authorized_verifier(verifier) == true, 'Verifier should be verified');
 }
