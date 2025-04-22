@@ -170,8 +170,7 @@ pub mod IdentityRegistry {
         }
 
         fn is_authorized_verifier(self: @ContractState, verifier: ContractAddress) -> bool {
-            self.authorized_verifiers.entry(verifier).read()
-            
+            self.authorized_verifiers.entry(verifier).read()            
         }
     }
 }
