@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     IdentityRegistry: {
       address:
-        "0x735579a4af5080f05d6b20634e1b4cf916216f4834fcc5dbf40dcd9226311a5",
+        "0x55f0f77567ce86d20fd4f98d5dd65646de2a6b9920fd30e8464c2f81fb9e815",
       abi: [
         {
           type: "impl",
@@ -351,7 +351,7 @@ const deployedContracts = {
     },
     ClaimVerifier: {
       address:
-        "0x67c1741cdb0f7cb1312beec1835b9fc00a4fb86bdd8195a34c044018ffc5fe",
+        "0x14c893947793875dd9f096c8d8a0900cce6ce4e94b6eb7469a071df811d77c7",
       abi: [
         {
           type: "impl",
@@ -625,6 +625,505 @@ const deployedContracts = {
       ],
       classHash:
         "0x39b8343e63e36eaa294345d5b138bff5ef52f3aef1737812433a064c96fcbd7",
+    },
+    CredentialManager: {
+      address:
+        "0x648425a942898c5d90e6c1142da9bed22b7abdf3e2a4e0363a6468d570e7784",
+      abi: [
+        {
+          type: "impl",
+          name: "CredentialManagerImpl",
+          interface_name: "contracts::CredentialManager::ICredentialManager",
+        },
+        {
+          type: "enum",
+          name: "core::bool",
+          variants: [
+            {
+              name: "False",
+              type: "()",
+            },
+            {
+              name: "True",
+              type: "()",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "contracts::CredentialManager::Credential",
+          members: [
+            {
+              name: "credential_type",
+              type: "core::felt252",
+            },
+            {
+              name: "issuer",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "data_hash",
+              type: "core::felt252",
+            },
+            {
+              name: "issued_at",
+              type: "core::integer::u64",
+            },
+            {
+              name: "expires_at",
+              type: "core::integer::u64",
+            },
+            {
+              name: "is_revoked",
+              type: "core::bool",
+            },
+          ],
+        },
+        {
+          type: "interface",
+          name: "contracts::CredentialManager::ICredentialManager",
+          items: [
+            {
+              type: "function",
+              name: "issue_credential",
+              inputs: [
+                {
+                  name: "user",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+                {
+                  name: "credential_type",
+                  type: "core::felt252",
+                },
+                {
+                  name: "data_hash",
+                  type: "core::felt252",
+                },
+                {
+                  name: "validity_period",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "revoke_credential",
+              inputs: [
+                {
+                  name: "user",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+                {
+                  name: "credential_id",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "get_credential",
+              inputs: [
+                {
+                  name: "user",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+                {
+                  name: "credential_id",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "contracts::CredentialManager::Credential",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "is_valid_credential",
+              inputs: [
+                {
+                  name: "user",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+                {
+                  name: "credential_id",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_user_credential_count",
+              inputs: [
+                {
+                  name: "user",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::integer::u64",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "authorize_issuer",
+              inputs: [
+                {
+                  name: "credential_type",
+                  type: "core::felt252",
+                },
+                {
+                  name: "issuer",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "revoke_issuer",
+              inputs: [
+                {
+                  name: "credential_type",
+                  type: "core::felt252",
+                },
+                {
+                  name: "issuer",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "is_authorized_issuer",
+              inputs: [
+                {
+                  name: "credential_type",
+                  type: "core::felt252",
+                },
+                {
+                  name: "issuer",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_identity_registry",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
+            },
+          ],
+        },
+        {
+          type: "impl",
+          name: "OwnableTwoStepImpl",
+          interface_name:
+            "openzeppelin_access::ownable::interface::IOwnableTwoStep",
+        },
+        {
+          type: "interface",
+          name: "openzeppelin_access::ownable::interface::IOwnableTwoStep",
+          items: [
+            {
+              type: "function",
+              name: "owner",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "pending_owner",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "accept_ownership",
+              inputs: [],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "transfer_ownership",
+              inputs: [
+                {
+                  name: "new_owner",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "renounce_ownership",
+              inputs: [],
+              outputs: [],
+              state_mutability: "external",
+            },
+          ],
+        },
+        {
+          type: "constructor",
+          name: "constructor",
+          inputs: [
+            {
+              name: "owner",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "identity_registry_address",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "require_verification",
+              type: "core::bool",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::CredentialManager::CredentialManager::CredentialIssued",
+          kind: "struct",
+          members: [
+            {
+              name: "user",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+            {
+              name: "credential_id",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+            {
+              name: "credential_type",
+              type: "core::felt252",
+              kind: "data",
+            },
+            {
+              name: "issuer",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::CredentialManager::CredentialManager::CredentialRevoked",
+          kind: "struct",
+          members: [
+            {
+              name: "user",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+            {
+              name: "credential_id",
+              type: "core::integer::u64",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::CredentialManager::CredentialManager::IssuerAuthorized",
+          kind: "struct",
+          members: [
+            {
+              name: "credential_type",
+              type: "core::felt252",
+              kind: "data",
+            },
+            {
+              name: "issuer",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::CredentialManager::CredentialManager::IssuerRevoked",
+          kind: "struct",
+          members: [
+            {
+              name: "credential_type",
+              type: "core::felt252",
+              kind: "data",
+            },
+            {
+              name: "issuer",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::CredentialManager::CredentialManager::IdentityRegistrySet",
+          kind: "struct",
+          members: [
+            {
+              name: "registry_address",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::CredentialManager::CredentialManager::VerificationRequirementUpdated",
+          kind: "struct",
+          members: [
+            {
+              name: "require_verification",
+              type: "core::bool",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+          kind: "struct",
+          members: [
+            {
+              name: "previous_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "new_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+          kind: "struct",
+          members: [
+            {
+              name: "previous_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "new_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+          kind: "enum",
+          variants: [
+            {
+              name: "OwnershipTransferred",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+              kind: "nested",
+            },
+            {
+              name: "OwnershipTransferStarted",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+              kind: "nested",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::CredentialManager::CredentialManager::Event",
+          kind: "enum",
+          variants: [
+            {
+              name: "CredentialIssued",
+              type: "contracts::CredentialManager::CredentialManager::CredentialIssued",
+              kind: "nested",
+            },
+            {
+              name: "CredentialRevoked",
+              type: "contracts::CredentialManager::CredentialManager::CredentialRevoked",
+              kind: "nested",
+            },
+            {
+              name: "IssuerAuthorized",
+              type: "contracts::CredentialManager::CredentialManager::IssuerAuthorized",
+              kind: "nested",
+            },
+            {
+              name: "IssuerRevoked",
+              type: "contracts::CredentialManager::CredentialManager::IssuerRevoked",
+              kind: "nested",
+            },
+            {
+              name: "IdentityRegistrySet",
+              type: "contracts::CredentialManager::CredentialManager::IdentityRegistrySet",
+              kind: "nested",
+            },
+            {
+              name: "VerificationRequirementUpdated",
+              type: "contracts::CredentialManager::CredentialManager::VerificationRequirementUpdated",
+              kind: "nested",
+            },
+            {
+              name: "OwnableEvent",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+              kind: "flat",
+            },
+          ],
+        },
+      ],
+      classHash:
+        "0x486dbe64803e39829b9e66b07ac797ec0fabc66fb36664e90c140c3c5e17786",
     },
   },
 } as const;

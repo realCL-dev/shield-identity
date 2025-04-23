@@ -58,6 +58,16 @@ const deployScript = async (): Promise<void> => {
       identity_registry_address: identityRegistry.address  // Match the exact parameter name
     },
   });
+
+  // Deploy CredentialManager with required addresses
+  await deployContract({
+    contract: "CredentialManager",
+    constructorArgs: {
+      owner: deployer.address,
+      identity_registry_address: identityRegistry.address,  // Match the exact parameter name
+      require_verification: true,
+    },
+  });
 };
 
 const main = async (): Promise<void> => {

@@ -42,10 +42,10 @@ pub mod ClaimVerifier {
 
     #[storage]
     pub struct Storage {
-        identity_registry: ContractAddress,      // Points to Identity Registry contract
-        verification_types: Map<felt252, bool>,  // Tracks supported verification types
+        identity_registry: ContractAddress, // Points to Identity Registry contract
+        verification_types: Map<felt252, bool>, // Tracks supported verification types
         #[substorage(v0)]
-        ownable: OwnableComponent::Storage, //owner management
+        ownable: OwnableComponent::Storage //owner management
     }
 
     #[event]
