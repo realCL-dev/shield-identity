@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     IdentityRegistry: {
       address:
-        "0x352ffa5289580684c5689a4589983533acebe9d4a988f775c1612fde1c3cd1",
+        "0x735579a4af5080f05d6b20634e1b4cf916216f4834fcc5dbf40dcd9226311a5",
       abi: [
         {
           type: "impl",
@@ -348,6 +348,283 @@ const deployedContracts = {
       ],
       classHash:
         "0x200aa60ecb3fae2ac191d7eeb5783e264020df0a0fc5bf3c2e76e8f7d3d3dac",
+    },
+    ClaimVerifier: {
+      address:
+        "0x67c1741cdb0f7cb1312beec1835b9fc00a4fb86bdd8195a34c044018ffc5fe",
+      abi: [
+        {
+          type: "impl",
+          name: "ClaimVerifierImpl",
+          interface_name: "contracts::ClaimVerifier::IClaimVerifier",
+        },
+        {
+          type: "enum",
+          name: "core::bool",
+          variants: [
+            {
+              name: "False",
+              type: "()",
+            },
+            {
+              name: "True",
+              type: "()",
+            },
+          ],
+        },
+        {
+          type: "interface",
+          name: "contracts::ClaimVerifier::IClaimVerifier",
+          items: [
+            {
+              type: "function",
+              name: "verify_age_claim",
+              inputs: [
+                {
+                  name: "proof",
+                  type: "core::array::Array::<core::felt252>",
+                },
+                {
+                  name: "public_inputs",
+                  type: "core::array::Array::<core::felt252>",
+                },
+                {
+                  name: "min_age",
+                  type: "core::integer::u64",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "add_verification_type",
+              inputs: [
+                {
+                  name: "claim_type",
+                  type: "core::felt252",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "is_verification_type_supported",
+              inputs: [
+                {
+                  name: "claim_type",
+                  type: "core::felt252",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::bool",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "get_identity_registry",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
+            },
+          ],
+        },
+        {
+          type: "impl",
+          name: "OwnableTwoStepImpl",
+          interface_name:
+            "openzeppelin_access::ownable::interface::IOwnableTwoStep",
+        },
+        {
+          type: "interface",
+          name: "openzeppelin_access::ownable::interface::IOwnableTwoStep",
+          items: [
+            {
+              type: "function",
+              name: "owner",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "pending_owner",
+              inputs: [],
+              outputs: [
+                {
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "accept_ownership",
+              inputs: [],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "transfer_ownership",
+              inputs: [
+                {
+                  name: "new_owner",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "renounce_ownership",
+              inputs: [],
+              outputs: [],
+              state_mutability: "external",
+            },
+          ],
+        },
+        {
+          type: "constructor",
+          name: "constructor",
+          inputs: [
+            {
+              name: "identity_registry_address",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+            {
+              name: "owner",
+              type: "core::starknet::contract_address::ContractAddress",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::ClaimVerifier::ClaimVerifier::ClaimVerified",
+          kind: "struct",
+          members: [
+            {
+              name: "user",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+            {
+              name: "claim_type",
+              type: "core::felt252",
+              kind: "data",
+            },
+            {
+              name: "success",
+              type: "core::bool",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::ClaimVerifier::ClaimVerifier::VerificationTypeAdded",
+          kind: "struct",
+          members: [
+            {
+              name: "claim_type",
+              type: "core::felt252",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+          kind: "struct",
+          members: [
+            {
+              name: "previous_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "new_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+          kind: "struct",
+          members: [
+            {
+              name: "previous_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "new_owner",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+          kind: "enum",
+          variants: [
+            {
+              name: "OwnershipTransferred",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferred",
+              kind: "nested",
+            },
+            {
+              name: "OwnershipTransferStarted",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::OwnershipTransferStarted",
+              kind: "nested",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::ClaimVerifier::ClaimVerifier::Event",
+          kind: "enum",
+          variants: [
+            {
+              name: "ClaimVerified",
+              type: "contracts::ClaimVerifier::ClaimVerifier::ClaimVerified",
+              kind: "nested",
+            },
+            {
+              name: "VerificationTypeAdded",
+              type: "contracts::ClaimVerifier::ClaimVerifier::VerificationTypeAdded",
+              kind: "nested",
+            },
+            {
+              name: "OwnableEvent",
+              type: "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
+              kind: "flat",
+            },
+          ],
+        },
+      ],
+      classHash:
+        "0x39b8343e63e36eaa294345d5b138bff5ef52f3aef1737812433a064c96fcbd7",
     },
   },
 } as const;

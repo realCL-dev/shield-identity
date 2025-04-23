@@ -42,10 +42,20 @@ import { green } from "./helpers/colorize-log";
  * @returns {Promise<void>}
  */
 const deployScript = async (): Promise<void> => {
-  await deployContract({
+  // Deploy IdentityRegistry first
+  const identityRegistry = await deployContract({
     contract: "IdentityRegistry",
     constructorArgs: {
       owner: deployer.address,
+    },
+  });
+
+  // Deploy ClaimVerifier with IdentityRegistry address
+  await deployContract({
+    contract: "ClaimVerifier",
+    constructorArgs: {
+      owner: deployer.address,
+      identity_registry_address: identityRegistry.address  // Match the exact parameter name
     },
   });
 };
