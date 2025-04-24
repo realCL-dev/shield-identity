@@ -2,13 +2,13 @@ use starknet::ContractAddress;
 
 // Define the Credential struct with proper derive traits
 #[derive(Drop, Serde, Copy, starknet::Store)]
-pub struct Credential {    
+pub struct Credential {
     credential_type: felt252, // Type of credential (e.g., 'age', 'kyc', 'country')    
     issuer: ContractAddress, // Issuer of the credential   
-    data_hash: felt252,  // Hash of the credential data    
+    data_hash: felt252, // Hash of the credential data    
     issued_at: u64, // Timestamp when the credential was issued    
     expires_at: u64, // Timestamp when the credential expires (0 for no expiration)    
-    is_revoked: bool, // Whether the credential is revoked
+    is_revoked: bool // Whether the credential is revoked
 }
 
 #[starknet::interface]
@@ -52,7 +52,7 @@ pub mod CredentialManager {
     use contracts::IdentityRegistry::{
         IIdentityRegistryDispatcher, IIdentityRegistryDispatcherTrait,
     };
-    use core::traits::{Into, Default};
+    use core::traits::{Default, Into};
     use openzeppelin_access::ownable::interface::IOwnableTwoStep;
     use openzeppelin_access::ownable::{OwnableComponent};
     use starknet::storage::{
@@ -60,7 +60,7 @@ pub mod CredentialManager {
     };
     use starknet::{ContractAddress, get_block_timestamp, get_caller_address};
 
-    use super:: Credential;
+    use super::Credential;
 
 
     #[generate_trait]
@@ -90,14 +90,19 @@ pub mod CredentialManager {
 
     #[storage]
     pub struct Storage {
-        
-        user_credentials: Map<(ContractAddress, u64), Credential>, // Mapping from user address to credential ID to credential        
-        user_credential_count: Map<ContractAddress, u64>, // Mapping from user address to credential count        
-        authorized_issuers: Map<(felt252, ContractAddress), bool>, // Mapping of authorized issuers for each credential type        
+        user_credentials: Map<
+            (ContractAddress, u64), Credential,
+        >, // Mapping from user address to credential ID to credential        
+        user_credential_count: Map<
+            ContractAddress, u64,
+        >, // Mapping from user address to credential count        
+        authorized_issuers: Map<
+            (felt252, ContractAddress), bool,
+        >, // Mapping of authorized issuers for each credential type        
         identity_registry: ContractAddress, // Identity Registry contract address        
         require_identity_verification: bool, // Whether to enforce identity verification        
         #[substorage(v0)]
-        ownable: OwnableComponent::Storage, // Contract owner (from Openzeppelin ownable)
+        ownable: OwnableComponent::Storage // Contract owner (from Openzeppelin ownable)
     }
 
     #[event]
@@ -243,7 +248,6 @@ pub mod CredentialManager {
 
             // Update the credential
             self.user_credentials.entry((user, credential_id)).write(credential);
-     
 
             // Emit event
             self.emit(Event::CredentialRevoked(CredentialRevoked { user, credential_id }));
@@ -388,7 +392,8 @@ pub mod CredentialManager {
             self: @ContractState, credential_type: felt252, issuer: ContractAddress,
         ) -> bool {
             // The contract owner is always authorized, or check the mapping
-            issuer == self.ownable.owner() || self.authorized_issuers.entry((credential_type, issuer)).read()
+            issuer == self.ownable.owner()
+                || self.authorized_issuers.entry((credential_type, issuer)).read()
         }
 
         fn verify_user_in_registry(self: @ContractState, user: ContractAddress) {

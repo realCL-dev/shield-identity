@@ -118,11 +118,20 @@ fn test_verify_age_claim_flow() {
     // Create a simple proof
     let mut proof: Array<felt252> = array![];
     proof.append(1);
-    let mut public_inputs: Array<felt252> = array![];
+    use contracts::zk::age_verification::AgeVerificationPublicInputs;
 
+    // Construct the public inputs
+    // Construct the public inputs
+    let public_inputs = AgeVerificationPublicInputs {
+        min_age_seconds: 18 * 31536000_u64, // 18 years in seconds
+        current_timestamp: 1677777777_u64,   // Example timestamp
+        identity_hash: test_hash,
+    };
+    let min_age_seconds = public_inputs.min_age_seconds;
+   
     // Verify age claim (should succeed since the user is verified)
     start_cheat_caller_address(claim_verifier.contract_address, user());
-    let result = claim_verifier.verify_age_claim(proof, public_inputs, 18);
+    let result = claim_verifier.verify_age_claim(proof, public_inputs, min_age_seconds);
     stop_cheat_caller_address(claim_verifier.contract_address);
 
     assert(result, 'Age verification should succeed');
@@ -131,10 +140,21 @@ fn test_verify_age_claim_flow() {
 #[test]
 #[should_panic(expected: ('User not verified',))]
 fn test_verify_age_claim_unverified_user() {
+    use contracts::zk::age_verification::AgeVerificationPublicInputs;
     let identity_registry = deploy_identity_registry();
     let claim_verifier = deploy_claim_verifier(identity_registry.contract_address);
 
     let test_hash: felt252 = 0x12345;
+
+    // Construct the public inputs
+    let public_inputs = AgeVerificationPublicInputs {
+        min_age_seconds: 18 * 31536000_u64, // 18 years in seconds
+        current_timestamp: 1677777777_u64,   // Example timestamp
+        identity_hash: test_hash,
+    };
+    let min_age: u64 = 18;
+    // Convert years to seconds
+    let min_age_seconds = min_age * 31536000_u64; // seconds in a year
 
     // Register user in identity registry (but don't verify)
     start_cheat_caller_address(identity_registry.contract_address, user());
@@ -144,10 +164,10 @@ fn test_verify_age_claim_unverified_user() {
     // Create a simple proof
     let mut proof: Array<felt252> = array![];
     proof.append(1);
-    let mut public_inputs: Array<felt252> = array![];
+
 
     // Attempt to verify age claim (should fail since the user is not verified)
     start_cheat_caller_address(claim_verifier.contract_address, user());
-    claim_verifier.verify_age_claim(proof, public_inputs, 18);
+    claim_verifier.verify_age_claim(proof, public_inputs, min_age_seconds);
     stop_cheat_caller_address(claim_verifier.contract_address);
 }

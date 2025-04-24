@@ -1,3 +1,4 @@
+use crate::zk::age_verification::{AgeVerificationPublicInputs, verify_zk_proof_internal};
 use starknet::ContractAddress;
 
 #[starknet::interface]
@@ -5,7 +6,7 @@ pub trait IClaimVerifier<TContractState> {
     fn verify_age_claim(
         ref self: TContractState,
         proof: Array<felt252>,
-        public_inputs: Array<felt252>,
+        public_inputs: AgeVerificationPublicInputs,
         min_age: u64,
     ) -> bool;
     fn add_verification_type(ref self: TContractState, claim_type: felt252);
@@ -16,10 +17,12 @@ pub trait IClaimVerifier<TContractState> {
 #[starknet::contract]
 pub mod ClaimVerifier {
     // Import the Identity Registry dispatcher traits
+    use super::{AgeVerificationPublicInputs, verify_zk_proof_internal};
     use contracts::IdentityRegistry::{
         IIdentityRegistryDispatcher, IIdentityRegistryDispatcherTrait,
     };
     use openzeppelin_access::ownable::{OwnableComponent};
+
     use starknet::storage::{
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
@@ -89,10 +92,13 @@ pub mod ClaimVerifier {
 
     #[abi(embed_v0)]
     impl ClaimVerifierImpl of super::IClaimVerifier<ContractState> {
+        // In claim_verifier.cairo
+
+        // Add or update your verification function
         fn verify_age_claim(
             ref self: ContractState,
             proof: Array<felt252>,
-            public_inputs: Array<felt252>,
+            public_inputs: AgeVerificationPublicInputs,
             min_age: u64,
         ) -> bool {
             // Get caller address
@@ -108,21 +114,14 @@ pub mod ClaimVerifier {
             let identity_registry = IIdentityRegistryDispatcher {
                 contract_address: self.identity_registry.read(),
             };
-
             assert(identity_registry.is_verified(user), ErrorsImpl::not_verified());
 
-            // Get the user's identity hash from the registry
-            //let identity_hash = identity_registry.get_identity_hash(user);
+            // Check that min_age matches public_inputs (convert years to seconds)
+            let min_age_seconds = min_age * 31536000_u64; // seconds in a year
+            assert(public_inputs.min_age_seconds == min_age_seconds, 'Min age mismatch');
 
-            // TODO: Implement proper ZK proof verification here
-            // For the MVP, we'll use a simplified verification
-            // In production, this would be replaced with an actual ZK verification
-
-            // Simplified verification logic (to be enhanced in future iterations)
-            let verification_success = true; // Replace with actual verification result
-
-            // Ensure proof has at least one element
-            assert(proof.len() > 0, ErrorsImpl::invalid_proof());
+            // Verify the ZK proof
+            let verification_success = self.verify_zk_proof(proof, public_inputs);
 
             // Emit verification event
             self
@@ -162,14 +161,14 @@ pub mod ClaimVerifier {
     // Additional internal methods
     #[generate_trait]
     impl InternalFunctions of InternalFunctionsTrait {
-        // Function to verify ZK proofs (placeholder to be implemented later)
+        // Function that calls the ZK proof verification from age_verification.cairo
         fn verify_zk_proof(
-            self: @ContractState, proof: Array<felt252>, public_inputs: Array<felt252>,
+            self: @ContractState,
+            proof: Array<felt252>,
+            public_inputs: AgeVerificationPublicInputs,
         ) -> bool {
-            // TODO: Implement actual ZK proof verification
-            // For hackathon MVP, we return true
-            // This should be replaced with proper verification logic
-            true
+            // Call the verify_zk_proof_internal function from age_verification module
+            verify_zk_proof_internal(proof, public_inputs)
         }
     }
 }
